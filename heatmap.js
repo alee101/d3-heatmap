@@ -19,6 +19,14 @@
 
 	columnLabels: [],
 
+	// Text to show as row label, where rl is an element
+	// from rowLabels and i is its index in that array
+	rowLabelText: function(rl, i) { return rl; },
+
+	// Text to show as col label, where cl is an element
+	// from colLabels and i is its index in that array
+	colLabelText: function(cl, i) { return cl; },
+
 	displayLegend: true,
 
 	// Width of each legend element, in pixels
@@ -131,7 +139,7 @@
 	    var rowLabels = this.svg.selectAll('.rowLabel')
 		.data(this.settings.rowLabels)
 		.enter().append('text')
-		.text(function(rl) { return rl; })
+		.text(function(rl, i) { return this.settings.rowLabelText.call(this, rl, i); }.bind(this))
 		.attr('x', 0)
 		.attr('y', function(rl, i) { return i * this.fullCellSize; }.bind(this))
 		.style('text-anchor', 'end')
@@ -141,7 +149,7 @@
 	    var colLabels = this.svg.selectAll('.colLabel')
 		.data(this.settings.colLabels)
 		.enter().append('text')
-		.text(function(cl) { return cl; })
+		.text(function(cl, i) { return this.settings.colLabelText.call(this, cl, i); }.bind(this))
 		.attr('x', function(cl, i) { return i * this.fullCellSize; }.bind(this))
 		.attr('y', 0)
 		.style('text-anchor', 'middle')
