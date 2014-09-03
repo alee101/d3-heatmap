@@ -33,8 +33,7 @@
 	// Thresholds for legendColors if legendAutoThreshold is false
 	legendThresholds: [0, 2, 4, 6, 8],
 
-	//legendColors: ['#eee', '#d6e685', '#8cc665', '#44a340', '#1e6823'],
-	legendColors: ["#ffffd9","#edf8b1","#c7e9b4","#7fcdbb","#41b6c4","#1d91c0","#225ea8","#253494","#081d58"],
+	legendColors: ['#eee', '#d6e685', '#8cc665', '#44a340', '#1e6823'],
 
 	// Url to fetch JSON data from
 	data: '',
@@ -60,12 +59,12 @@
 
 	// Compute dimensions
 	this.margin = { top: 30, right: 0, bottom: 30, left: 40 };
-	this.cellSize = this.settings.cellSize + this.settings.cellPadding;
+	this.fullCellSize = this.settings.cellSize + this.settings.cellPadding;
 	this.dim = {
 	    'width': this.margin.left + this.margin.right +
-		this.cellSize * this.settings.colLabels.length,
+		this.fullCellSize * this.settings.colLabels.length,
 	    'height': this.margin.top + this.margin.bottom +
-		this.cellSize * this.settings.rowLabels.length +
+		this.fullCellSize * this.settings.rowLabels.length +
 		(this.settings.displayLegend ? this.settings.legendEleHeight + this.margin.bottom : 0)
 	};
 
@@ -134,7 +133,7 @@
 		.enter().append('text')
 		.text(function(rl) { return rl; })
 		.attr('x', 0)
-		.attr('y', function(rl, i) { return i * this.cellSize; }.bind(this))
+		.attr('y', function(rl, i) { return i * this.fullCellSize; }.bind(this))
 		.style('text-anchor', 'end')
 		.attr('transform', 'translate(-6,' + this.settings.cellSize / 1.5 + ')')
 		.attr('class', 'rowLabel mono axis');
@@ -143,7 +142,7 @@
 		.data(this.settings.colLabels)
 		.enter().append('text')
 		.text(function(cl) { return cl; })
-		.attr('x', function(cl, i) { return i * this.cellSize; }.bind(this))
+		.attr('x', function(cl, i) { return i * this.fullCellSize; }.bind(this))
 		.attr('y', 0)
 		.style('text-anchor', 'middle')
 		.attr('transform', 'translate(' + this.settings.cellSize / 2 + ', -6)')
@@ -152,8 +151,8 @@
 	    var heatmapChart = this.svg.selectAll('.cell')
 		.data(this.data)
 		.enter().append('rect')
-		.attr('x', function(d) { return (d.col - 1) * this.cellSize; }.bind(this))
-		.attr('y', function(d) { return (d.row - 1) * this.cellSize; }.bind(this))
+		.attr('x', function(d) { return (d.col - 1) * this.fullCellSize; }.bind(this))
+		.attr('y', function(d) { return (d.row - 1) * this.fullCellSize; }.bind(this))
 		.attr('rx', this.settings.cellRadius)
 		.attr('ry', this.settings.cellRadius)
 		.attr('class', 'cell')
