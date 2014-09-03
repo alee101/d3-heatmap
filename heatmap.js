@@ -45,7 +45,13 @@
 	// Callback when clicking on a cell
 	onClick: null,
 
-	tooltip: false // TODO: implement
+	// Whether to display tooltips when hovering over cells
+	tooltip: false,
+
+	// Text to display in tooltip if tooltip is true
+	tooltipText: function(d) {
+	    return 'Value: ' + d.value;
+	}
     };
 
     function Heatmap(settings) {
@@ -62,8 +68,6 @@
 		this.cellSize * this.settings.rowLabels.length +
 		(this.settings.displayLegend ? this.settings.legendEleHeight + this.margin.bottom : 0)
 	};
-
-	console.log(this);
 
 	// Load data and initialize chart with data
 	d3.json(this.settings.data, function(err, data) {
@@ -105,6 +109,17 @@
 		.attr('height', this.dim.height + this.margin.top) // add additional margin for transform
 		.append('g')
 		.attr('transform', 'translate(' + this.margin.left + ',' + this.margin.top + ')');
+
+	    if (this.settings.tooltip) {
+		this.tooltip = d3.tip()
+		.attr('class', 'd3-tip')
+		.offset([-10, 0])
+		.html(function(d) { // TODO: clean user input
+		    return this.settings.tooltipText.call(this, d);
+		}.bind(this));
+
+		this.svg.call(this.tooltip);
+	    }
 
 	    this.drawHeatmap();
 
@@ -158,6 +173,16 @@
 		    }
 
 		    this.settings.onClick.call(this, cell);
+		}.bind(this))
+		.on('mouseover', function(cell) {
+		    if (this.settings.tooltip) {
+			this.tooltip.show(cell);
+		    }
+		}.bind(this))
+		.on('mouseout', function(cell) {
+		    if (this.settings.tooltip) {
+			this.tooltip.hide(cell);
+		    }
 		}.bind(this));
 
 	    // Fill cells

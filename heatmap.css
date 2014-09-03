@@ -28,3 +28,12 @@ text.mono {
     font-family: Consolas, courier;
     fill: #aaa;
 }
+
+.d3-tip {
+    font-size: 9pt;
+    line-height: 1;
+    padding: 12px;
+    background: rgba(0, 0, 0, 0.8);
+    color: #fff;
+    border-radius: 2px;
+}
