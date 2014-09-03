@@ -66,21 +66,21 @@
 	console.log(this);
 
 	// Load data and initialize chart with data
-	//d3.json(this.settings.data, function(err, data) {
-	d3.tsv(this.settings.data,
-	       function(d) {
-		   return {
-		       row: +d.row, col: +d.col, value: +d.value
-		   };
-	       },
-	       function(err, data) {
-		   if (err) {
-		       throw err;
-		   }
-		   this.data = data;
+	d3.json(this.settings.data, function(err, data) {
+	    if (err) {
+		throw err;
+	    }
 
-		   this.init();
-	       }.bind(this));
+	    this.data = data.map(function(d) {
+		return {
+		    row: +d.row,
+		    col: +d.col,
+		    value: +d.value
+		}
+	    });
+
+	    this.init();
+	}.bind(this));
     }
 
     Heatmap.prototype = {
