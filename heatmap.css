@@ -1,0 +1,30 @@
+rect.cell {
+    cursor: pointer;
+}
+
+rect.cell:hover, rect.cell.focusout:hover {
+    stroke: #000;
+    stroke-width: 1px;
+}
+
+rect.cell.focus {
+    stroke: #000;
+    stroke-width: 1px;
+    opacity: 1;
+}
+
+rect.cell.focusout {
+    stroke-width: 0px;
+    opacity: 0.6;
+}
+
+rect.bordered {
+    stroke: #e6e6e6;
+    stroke-width: 1px;
+}
+
+text.mono {
+    font-size: 9pt;
+    font-family: Consolas, courier;
+    fill: #aaa;
+}
