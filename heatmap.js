@@ -195,6 +195,16 @@
 	    // Fill cells
 	    heatmapChart.transition().duration(1000)
 		.style('fill', function(d) { return this.colorScale(d.value) }.bind(this));
+
+	    this.heatmapChart = heatmapChart;
+	},
+
+	// Restore heatmap to original state by clearing selection and focus if focusOnClick is true
+	clearSelection: function() {
+	    this.heatmapChart.each(function(cell) {
+		var cellDiv = d3.select(this);
+		cellDiv.attr('class', 'cell');
+	    });
 	},
 
 	drawLegend: function() {
