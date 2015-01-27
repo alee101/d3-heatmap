@@ -43,14 +43,20 @@
 
 	legendColors: ['#eee', '#d6e685', '#8cc665', '#44a340', '#1e6823'],
 
-	// Url to fetch JSON data from
-	data: '',
+	// Url to fetch JSON data from or JSON object
+	data: {},
 
 	// Whether to focus on cell when clicked
 	focusOnClick: false,
 
 	// Callback when clicking on a cell
 	onClick: null,
+
+	// Callback when mousing over a cell
+	onMouseover: null,
+
+	// Callback when mousing out of a cell
+	onMouseout: null,
 
 	// Whether to display tooltips when hovering over cells
 	tooltip: false,
@@ -63,7 +69,7 @@
 
     function Heatmap(settings) {
 	settings = settings || {};
-	this.settings = merge(defaults, settings); // TODO: don't override defaults object
+	this.settings = extend({}, defaults, settings);
 
 	// Compute dimensions
 	this.margin = { top: 30, right: 0, bottom: 30, left: 40 };
@@ -77,21 +83,33 @@
 	};
 
 	// Load data and initialize chart with data
-	d3.json(this.settings.data, function(err, data) {
-	    if (err) {
-		throw err;
-	    }
+	if (typeof this.settings.data === 'string') {
+	    d3.json(this.settings.data, function(err, data) {
+		if (err) {
+		    throw err;
+		}
 
-	    this.data = data.map(function(d) {
+		this.data = data.map(function(d) {
+		    return {
+			row: +d.row,
+			col: +d.col,
+			value: +d.value
+		    };
+		});
+
+		this.init();
+	    }.bind(this));
+	} else if (typeof this.settings.data === 'object') {
+	    this.data = this.settings.data.map(function(d) {
 		return {
 		    row: +d.row,
 		    col: +d.col,
 		    value: +d.value
-		}
+		};
 	    });
 
 	    this.init();
-	}.bind(this));
+	}
     }
 
     Heatmap.prototype = {
@@ -185,11 +203,15 @@
 		    if (this.settings.tooltip) {
 			this.tooltip.show(cell);
 		    }
+
+		    this.settings.onMouseover.call(this, cell);
 		}.bind(this))
 		.on('mouseout', function(cell) {
 		    if (this.settings.tooltip) {
 			this.tooltip.hide(cell);
 		    }
+
+		    this.settings.onMouseout.call(this, cell);
 		}.bind(this));
 
 	    // Fill cells
@@ -199,7 +221,34 @@
 	    this.heatmapChart = heatmapChart;
 	},
 
-	// Restore heatmap to original state by clearing selection and focus if focusOnClick is true
+	// Focus on the cells with specified row, column coordinates
+	// cellCoords: Array of {'row': r, 'col': c} objects.
+	// Rows and columns are indexed from 1
+	selectCells: function(cellCoords) {
+	    if (!cellCoords) cellCoords = [];
+
+	    /* Build a mapping of a (row, col) cell to a single cellHash
+	       for simpler membership lookup.
+	       For rows and columns indexed starting at 1, an unique mapping is:
+	         tableIdx = (row - 1) * numCols + (col - 1)
+	    */
+	    var numCols = this.settings.colLabels.length;
+	    var cellHash = function(cell) {
+		return (cell.row-1) * numCols + (cell.col-1);
+	    };
+
+	    var selectedCellHashes = cellCoords.map(cellHash);
+	    this.heatmapChart.each(function(cell) {
+		var cellDiv = d3.select(this);
+		if (selectedCellHashes.indexOf(cellHash(cell)) === -1) {
+		    cellDiv.attr('class', 'cell focusout');
+		} else {
+		    cellDiv.attr('class', 'cell focus');
+		}
+	    });
+	},
+
+	// Restore heatmap to original state by clearing selection and focus
 	clearSelection: function() {
 	    this.heatmapChart.each(function(cell) {
 		var cellDiv = d3.select(this);
@@ -231,25 +280,21 @@
     };
 
     /*
-     * Recursively merge properties of two objects
-     * http://stackoverflow.com/a/383245
+     * Mimic jQuery's extend method: first argument
+     * is the target object to merge into and following
+     * arguments are objects to merge into target.
      */
-    function merge(obj1, obj2) {
-	for (var p in obj2) {
-	    try {
-		// Property in destination object set; update its value.
-		if (obj2[p].constructor == Object) {
-		    obj1[p] = merge(obj1[p], obj2[p]);
-		} else {
-		    obj1[p] = obj2[p];
+    function extend() {
+	var target = arguments[0] || {};
+	for (var i = 1; i < arguments.length; i++) {
+            for (var prop in arguments[i]) {
+		if (arguments[i].hasOwnProperty(prop)) {
+                    target[prop] = arguments[i][prop];
 		}
-	    } catch(e) {
-		// Property in destination object not set; create it and set its value.
-		obj1[p] = obj2[p];
 	    }
 	}
 
-	return obj1;
+	return target;
     }
 
     // Export heatmap
